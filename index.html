@@ -8,7 +8,9 @@
   <meta name="apple-mobile-web-app-title" content="SET">
   <meta name="theme-color" content="#F2F2F7">
   <title>SET - Classic 2-Minute Sprint</title>
-  <link rel="apple-touch-icon" href="icon.png">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     * {
@@ -16,372 +18,190 @@
       user-select: none;
       -webkit-user-select: none;
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
     }
 
-    /* Lock body strictly to the physical device viewport */
-    html, body {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      touch-action: manipulation;
+      overscroll-behavior: none;
       background-color: #F2F2F7;
       color: #1C1C1E;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
+    /* Screen height fixing for iOS Safari safe areas */
     .app-viewport {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      max-width: 414px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      padding: max(env(safe-area-inset-top), 16px) 16px max(env(safe-area-inset-bottom), 16px) 16px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding-top: env(safe-area-inset-top, 16px);
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+      padding-left: env(safe-area-inset-left, 16px);
+      padding-right: env(safe-area-inset-right, 16px);
     }
 
-    .hidden { display: none !important; }
-
-    /* Home Screen Layout */
-    #home-screen {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
-      align-items: center;
-      text-align: center;
-      padding: 10px 0;
-    }
-
-    .title-area h1 {
-      font-size: 4.2rem;
-      font-weight: 900;
-      letter-spacing: -1px;
-      color: #EE2A24;
-      line-height: 1;
-    }
-
-    .title-area p {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #8E8E93;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-top: 6px;
-    }
-
-    .preview-box {
-      display: flex;
-      gap: 16px;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
-      padding: 14px 18px;
-      border-radius: 20px;
-      border: 1px solid rgba(0,0,0,0.06);
-      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-    }
-
-    .preview-tile {
-      width: 58px;
-      height: 58px;
-    }
-
-    .highscore-card {
-      background: white;
-      border-radius: 14px;
-      padding: 8px 24px;
-      border: 1px solid rgba(0,0,0,0.06);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    }
-
-    .highscore-card span {
-      display: block;
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: #8E8E93;
-      letter-spacing: 1px;
-    }
-
-    .highscore-card strong {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #1C1C1E;
-    }
-
-    .btn-play {
-      width: 100%;
-      max-width: 320px;
-      padding: 16px;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: white;
-      background: #00A651;
-      border: none;
-      border-radius: 20px;
-      box-shadow: 0 6px 18px rgba(0, 166, 81, 0.3);
-      cursor: pointer;
+    /* Card tile selection transitions & shadows */
+    .set-tile {
+      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.12s ease, border-color 0.12s ease;
       touch-action: manipulation;
     }
 
-    .btn-play:active {
-      transform: scale(0.97);
+    .set-tile:active {
+      transform: scale(0.95);
     }
 
-    /* Game Screen Layout */
-    #game-screen {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 0;
+    .tile-selected {
+      border-color: #007AFF !important;
+      border-width: 3.5px !important;
+      background-color: rgba(0, 122, 255, 0.08) !important;
+      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25);
     }
 
-    .top-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 0 4px;
+    .tile-flash-success {
+      animation: flash-green 0.35s ease;
     }
 
-    .btn-exit {
-      background: none;
-      border: none;
-      color: #8E8E93;
-      font-size: 1.7rem;
-      cursor: pointer;
-      padding: 6px;
-      display: flex;
-      align-items: center;
+    @keyframes flash-green {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.06); border-color: #34C759; background-color: rgba(52, 199, 89, 0.15); }
+      100% { transform: scale(1); }
     }
 
-    .score-label {
-      font-size: 1.35rem;
-      font-weight: 800;
-      color: #1C1C1E;
+    .tile-shake-error {
+      animation: shake 0.32s ease-in-out;
     }
 
-    .board-center {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .timer-row {
-      display: flex;
-      width: 100%;
-      padding: 0 4px;
-      margin-bottom: 8px;
-    }
-
-    .timer-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: white;
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 12px;
-      padding: 5px 12px;
-      font-weight: 800;
-      font-size: 0.95rem;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .timer-pill.urgent {
-      color: #EE2A24;
-      border-color: rgba(238, 42, 36, 0.3);
-    }
-
-    /* 3x3 Grid - STRICT TOUCH LOCK (never scrolls/moves) */
-    .grid-board {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      width: 100%;
-      max-width: 380px;
-      aspect-ratio: 1;
-      touch-action: none;
-    }
-
-    .tile {
-      background: white;
-      border-radius: 18px;
-      border: 1.5px solid rgba(0,0,0,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-      touch-action: none;
-      padding: 6px;
-    }
-
-    .tile.selected {
-      border: 3.5px solid #007AFF !important;
-      background: rgba(0, 122, 255, 0.08);
-      transform: scale(0.96);
-    }
-
-    .available-pill {
-      margin-top: 12px;
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 20px;
-      padding: 5px 14px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #8E8E93;
-    }
-
-    /* Modal Overlay */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      z-index: 100;
-    }
-
-    .modal-box {
-      background: white;
-      border-radius: 28px;
-      padding: 28px 20px;
-      width: 100%;
-      max-width: 300px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    }
-
-    .modal-box h2 {
-      font-size: 1.8rem;
-      font-weight: 900;
-    }
-
-    .modal-score {
-      font-size: 3.2rem;
-      font-weight: 900;
-      color: #00A651;
-      line-height: 1;
-      margin: 10px 0 4px 0;
-    }
-
-    .modal-box p {
-      color: #8E8E93;
-      font-weight: 700;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 10px;
-    }
-
-    .modal-buttons button {
-      flex: 1;
-      padding: 12px;
-      border-radius: 14px;
-      border: none;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .btn-home {
-      background: #E5E5EA;
-      color: #1C1C1E;
-    }
-
-    .btn-again {
-      background: #00A651;
-      color: white;
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
     }
   </style>
 </head>
-<body>
+<body class="flex flex-col items-center justify-center min-h-screen">
 
-  <!-- Reusable SVG hatching patterns -->
-  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+  <!-- Reusable SVG hatching patterns for authentic striped cards -->
+  <svg width="0" height="0" class="absolute block pointer-events-none" style="position: absolute; width: 0; height: 0;">
     <defs>
+      <!-- Red Hatching Pattern (#EE2A24) -->
       <pattern id="stripe-red" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
         <line x1="0" y1="0" x2="0" y2="8" stroke="#EE2A24" stroke-width="2.6" />
       </pattern>
+      <!-- Green Hatching Pattern (#00A651) -->
       <pattern id="stripe-green" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
         <line x1="0" y1="0" x2="0" y2="8" stroke="#00A651" stroke-width="2.6" />
       </pattern>
+      <!-- Purple Hatching Pattern (#7C287D) -->
       <pattern id="stripe-purple" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
         <line x1="0" y1="0" x2="0" y2="8" stroke="#7C287D" stroke-width="2.6" />
       </pattern>
     </defs>
   </svg>
 
-  <div class="app-viewport">
+  <div class="app-viewport w-full max-w-md mx-auto flex flex-col justify-between">
+    
+    <!-- ============================================== -->
+    <!-- HOME SCREEN                                    -->
+    <!-- ============================================== -->
+    <div id="home-screen" class="flex flex-col justify-between items-center h-full flex-1 py-8 px-4 text-center">
+      <div class="my-auto flex flex-col items-center">
+        <!-- Title & Subtitle -->
+        <h1 class="text-7xl font-black tracking-tight text-[#EE2A24] mb-2 drop-shadow-sm">SET</h1>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-10">Classic 2-Minute Sprint</p>
 
-    <!-- HOME SCREEN -->
-    <div id="home-screen">
-      <div class="title-area">
-        <h1>SET</h1>
-        <p>Classic 2-Minute Sprint</p>
+        <!-- Decorative authentic preview symbols -->
+        <div class="flex items-center justify-center gap-6 mb-12 p-5 bg-white/70 backdrop-blur-md rounded-2xl shadow-sm border border-gray-200/60">
+          <div class="w-16 h-16" id="preview-1"></div>
+          <div class="w-16 h-16" id="preview-2"></div>
+          <div class="w-16 h-16" id="preview-3"></div>
+        </div>
+
+        <!-- High Score Badge -->
+        <div id="home-highscore-box" class="hidden flex-col items-center bg-white/90 backdrop-blur px-8 py-3.5 rounded-2xl shadow-sm border border-gray-200">
+          <span class="text-xs font-bold text-gray-400 tracking-wider">PERSONAL BEST</span>
+          <span id="home-highscore-val" class="text-2xl font-black text-gray-800">0 Sets</span>
+        </div>
       </div>
 
-      <div class="preview-box">
-        <div class="preview-tile" id="prev-1"></div>
-        <div class="preview-tile" id="prev-2"></div>
-        <div class="preview-tile" id="prev-3"></div>
+      <!-- Play Button -->
+      <div class="w-full px-4 mb-4">
+        <button id="btn-play-game" class="w-full py-4 text-xl font-bold text-white bg-[#00A651] active:bg-[#008f45] rounded-2xl shadow-lg shadow-green-600/25 transition-all transform active:scale-95">
+          Play Game
+        </button>
       </div>
-
-      <div id="home-highscore-wrap" class="highscore-card hidden">
-        <span>PERSONAL BEST</span>
-        <strong id="home-highscore-val">0 Sets</strong>
-      </div>
-
-      <button id="btn-start" class="btn-play">Play Game</button>
     </div>
 
-    <!-- GAME SCREEN -->
-    <div id="game-screen" class="hidden">
-      <div class="top-nav">
-        <button id="btn-exit" class="btn-exit">✕</button>
-        <div class="score-label">Sets: <span id="game-score">0</span></div>
+    <!-- ============================================== -->
+    <!-- GAME SCREEN                                    -->
+    <!-- ============================================== -->
+    <div id="game-screen" class="hidden flex flex-col justify-between items-center h-full flex-1 py-2 px-3">
+      
+      <!-- Top Navigation Bar -->
+      <div class="w-full flex items-center justify-between px-2 pt-2 pb-2">
+        <button id="btn-exit-game" class="p-2 text-gray-400 active:text-gray-600 rounded-full transition-colors" aria-label="Exit Game">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+
+        <div class="text-xl font-bold tracking-tight text-gray-800">
+          Sets: <span id="game-score" class="font-extrabold">0</span>
+        </div>
       </div>
 
-      <div class="board-center">
-        <div class="timer-row">
-          <div id="timer-pill" class="timer-pill">
-            <span>⏱</span>
-            <span id="game-timer">120s</span>
+      <!-- Grid Wrapper with Timer at Top-Left & Available Sets at Bottom -->
+      <div class="w-full flex flex-col items-center my-auto">
+        
+        <!-- Timer counter near the top left corner of the grid -->
+        <div class="w-full flex items-center justify-start px-2 mb-2">
+          <div id="timer-badge" class="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur rounded-xl shadow-xs border border-gray-200 text-gray-800 font-bold text-base transition-colors">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span id="game-timer" class="tabular-nums font-mono">120s</span>
           </div>
         </div>
 
-        <!-- 3x3 Grid -->
-        <div id="grid" class="grid-board"></div>
+        <!-- 3x3 Grid Layout -->
+        <div id="game-grid" class="w-full grid grid-cols-3 gap-2.5 sm:gap-3.5 p-1 aspect-square max-w-[390px]">
+          <!-- 9 dynamic cards will be rendered here -->
+        </div>
 
-        <div id="available-sets-pill" class="available-pill">0 Sets Available</div>
+        <!-- Available sets indicator near the bottom of the grid -->
+        <div class="mt-4 flex items-center justify-center">
+          <div id="sets-available-pill" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow-xs border border-gray-200/80 text-xs font-semibold text-gray-500">
+            <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+            </svg>
+            <span id="available-sets-text">Calculating...</span>
+          </div>
+        </div>
       </div>
 
-      <div></div>
+      <!-- Bottom Spacer to center grid symmetrically -->
+      <div class="h-6"></div>
     </div>
 
-    <!-- GAME OVER MODAL -->
-    <div id="modal-over" class="modal-backdrop hidden">
-      <div class="modal-box">
-        <h2>Time's Up!</h2>
-        <div id="modal-score-val" class="modal-score">0</div>
-        <p>Sets Found</p>
-        <div class="modal-buttons">
-          <button id="btn-modal-home" class="btn-home">Home</button>
-          <button id="btn-modal-again" class="btn-again">Play Again</button>
+    <!-- ============================================== -->
+    <!-- GAME OVER OVERLAY MODAL                        -->
+    <!-- ============================================== -->
+    <div id="game-over-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-6">
+      <div class="bg-white rounded-3xl p-7 w-full max-w-sm text-center shadow-2xl border border-gray-100 flex flex-col items-center animate-in fade-in duration-200">
+        <h2 class="text-3xl font-black text-gray-900 mb-1">Time's Up!</h2>
+        <p class="text-sm font-semibold text-gray-400 mb-5">Sprint Finished</p>
+
+        <div class="text-5xl font-black text-[#00A651] mb-2" id="modal-score">0</div>
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Sets Found</p>
+
+        <div id="modal-new-highscore" class="hidden mb-6 px-4 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-full">
+          🎉 New High Score! 🎉
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 w-full mt-2">
+          <button id="btn-modal-home" class="py-3 px-4 font-bold text-gray-700 bg-gray-100 active:bg-gray-200 rounded-xl transition-all">
+            Home
+          </button>
+          <button id="btn-modal-restart" class="py-3 px-4 font-bold text-white bg-[#00A651] active:bg-[#008f45] rounded-xl shadow-md transition-all">
+            Play Again
+          </button>
         </div>
       </div>
     </div>
@@ -389,6 +209,9 @@
   </div>
 
   <script>
+    /* =====================================================================
+       GAME CONSTANTS & AUDIO ENGINE
+       ===================================================================== */
     const SHAPES = ['circle', 'square', 'triangle'];
     const COLORS = [
       { name: 'red', hex: '#EE2A24', pattern: 'stripe-red' },
@@ -397,82 +220,146 @@
     ];
     const FILLS = ['solid', 'striped', 'outline'];
 
-    // Audio chime engine
+    // Web Audio synthesizer for haptic chime on set discovery
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
-    function playBeep(success) {
+
+    function playTone(freq, type = 'sine', duration = 0.12, delay = 0) {
       try {
         if (!audioCtx) audioCtx = new AudioContext();
         if (audioCtx.state === 'suspended') audioCtx.resume();
+
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + delay + duration);
+
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        if (success) {
-          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.12);
-          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.15);
-        }
-      } catch (e) {}
+
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + duration);
+      } catch (e) {
+        // Audio may be blocked before interaction; gracefully fail
+      }
     }
 
-    function createSVG(shape, color, fill) {
-      let fillVal = 'none';
-      if (fill === 'solid') fillVal = color.hex;
-      else if (fill === 'striped') fillVal = `url(#${color.pattern})`;
+    function soundSetSuccess() {
+      playTone(523.25, 'triangle', 0.12, 0);       // C5
+      playTone(659.25, 'triangle', 0.14, 0.08);    // E5
+      playTone(783.99, 'triangle', 0.22, 0.16);    // G5
+      if (navigator.vibrate) navigator.vibrate([40, 30, 60]);
+    }
 
-      let path = '';
-      if (shape === 'circle') {
-        path = `<circle cx="50" cy="50" r="37" fill="${fillVal}" stroke="${color.hex}" stroke-width="4.5" />`;
-      } else if (shape === 'square') {
-        path = `<rect x="13" y="13" width="74" height="74" rx="14" fill="${fillVal}" stroke="${color.hex}" stroke-width="4.5" />`;
-      } else if (shape === 'triangle') {
-        path = `<polygon points="50,15 85,78 15,78" stroke-linejoin="round" fill="${fillVal}" stroke="${color.hex}" stroke-width="4.5" />`;
-      }
+    function soundSetError() {
+      playTone(220, 'sawtooth', 0.18, 0);         // Low buzz
+      if (navigator.vibrate) navigator.vibrate(80);
+    }
 
-      return `<svg viewBox="0 0 100 100" style="width: 100%; height: 100%; pointer-events: none;">${path}</svg>`;
+    /* =====================================================================
+       CARD DATA STRUCTURE & SET VALIDATION
+       ===================================================================== */
+    let cardIdCounter = 1;
+    function createCard(shape, color, fill) {
+      return {
+        id: cardIdCounter++,
+        shape, // 'circle' | 'square' | 'triangle'
+        color, // color object
+        fill   // 'solid' | 'striped' | 'outline'
+      };
     }
 
     function isSet(a, b, c) {
-      const match = (x, y, z) => (x === y && y === z) || (x !== y && y !== z && x !== z);
-      return match(a.shape, b.shape, c.shape) &&
-             match(a.color.name, b.color.name, c.color.name) &&
-             match(a.fill, b.fill, c.fill);
+      const validShape = (a.shape === b.shape && b.shape === c.shape) ||
+                         (a.shape !== b.shape && b.shape !== c.shape && a.shape !== c.shape);
+      const validColor = (a.color.name === b.color.name && b.color.name === c.color.name) ||
+                         (a.color.name !== b.color.name && b.color.name !== c.color.name && a.color.name !== c.color.name);
+      const validFill  = (a.fill === b.fill && b.fill === c.fill) ||
+                         (a.fill !== b.fill && b.fill !== c.fill && a.fill !== c.fill);
+      return validShape && validColor && validFill;
     }
 
+    /* =====================================================================
+       SVG SHAPE GENERATOR
+       ===================================================================== */
+    function renderSymbolSVG(card) {
+      const { shape, color, fill } = card;
+      let fillVal = 'none';
+
+      if (fill === 'solid') {
+        fillVal = color.hex;
+      } else if (fill === 'striped') {
+        fillVal = `url(#${color.pattern})`;
+      } else if (fill === 'outline') {
+        fillVal = 'none';
+      }
+
+      const strokeVal = color.hex;
+      const strokeW = '4.5';
+
+      let inner = '';
+      if (shape === 'circle') {
+        inner = `<circle cx="50" cy="50" r="37" fill="${fillVal}" stroke="${strokeVal}" stroke-width="${strokeW}" />`;
+      } else if (shape === 'square') {
+        inner = `<rect x="13" y="13" width="74" height="74" rx="14" ry="14" fill="${fillVal}" stroke="${strokeVal}" stroke-width="${strokeW}" />`;
+      } else if (shape === 'triangle') {
+        // Centered equilateral triangle with rounded caps
+        inner = `<polygon points="50,15 85,78 15,78" stroke-linejoin="round" fill="${fillVal}" stroke="${strokeVal}" stroke-width="${strokeW}" />`;
+      }
+
+      return `
+        <svg viewBox="0 0 100 100" class="w-full h-full pointer-events-none p-1.5" style="overflow: visible;">
+          ${inner}
+        </svg>
+      `;
+    }
+
+    /* =====================================================================
+       GAME STATE & DECK MANAGEMENT
+       ===================================================================== */
     let deck = [];
-    let board = [];
+    let board = []; // 9 cards
     let selectedIds = new Set();
     let score = 0;
     let timeRemaining = 120;
     let timerInterval = null;
-    let cardSeq = 1;
     let highScore = parseInt(localStorage.getItem('set_high_score') || '0', 10);
 
-    function createFreshDeck(exclude = []) {
-      const d = [];
+    function createFreshDeck(excludeCards = []) {
+      const fullDeck = [];
       for (const s of SHAPES) {
         for (const c of COLORS) {
           for (const f of FILLS) {
-            const exists = exclude.some(x => x.shape === s && x.color.name === c.name && x.fill === f);
-            if (!exists) {
-              d.push({ id: cardSeq++, shape: s, color: c, fill: f });
+            const alreadyOnBoard = excludeCards.some(
+              b => b && b.shape === s && b.color.name === c.name && b.fill === f
+            );
+            if (!alreadyOnBoard) {
+              fullDeck.push(createCard(s, c, f));
             }
           }
         }
       }
-      return d.sort(() => Math.random() - 0.5);
+      // Shuffle array using Fisher-Yates
+      for (let i = fullDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [fullDeck[i], fullDeck[j]] = [fullDeck[j], fullDeck[i]];
+      }
+      return fullDeck;
     }
 
-    function countSets() {
+    function countBoardSets(cards = board) {
+      if (cards.length < 3) return 0;
       let count = 0;
-      for (let i = 0; i < board.length; i++) {
-        for (let j = i + 1; j < board.length; j++) {
-          for (let k = j + 1; k < board.length; k++) {
-            if (isSet(board[i], board[j], board[k])) count++;
+      for (let i = 0; i < cards.length; i++) {
+        for (let j = i + 1; j < cards.length; j++) {
+          for (let k = j + 1; k < cards.length; k++) {
+            if (isSet(cards[i], cards[j], cards[k])) {
+              count++;
+            }
           }
         }
       }
@@ -480,115 +367,158 @@
     }
 
     function ensureBoardHasSet() {
-      let tries = 0;
-      while (countSets() === 0 && tries < 20) {
+      let attempts = 0;
+      while (countBoardSets(board) === 0 && attempts < 25) {
+        // Collect current board and deck, reshuffle thoroughly
         deck = createFreshDeck([]);
         board = deck.splice(0, 9);
-        tries++;
+        attempts++;
       }
     }
 
+    /* =====================================================================
+       BOARD RENDERING & SELECTION HANDLING
+       ===================================================================== */
+    const gridEl = document.getElementById('game-grid');
+    const scoreEl = document.getElementById('game-score');
+    const timerEl = document.getElementById('game-timer');
+    const timerBadge = document.getElementById('timer-badge');
+    const setsPillText = document.getElementById('available-sets-text');
+
     function renderBoard() {
-      const grid = document.getElementById('grid');
-      grid.innerHTML = '';
-      board.forEach(card => {
+      gridEl.innerHTML = '';
+      board.forEach((card, index) => {
         const tile = document.createElement('div');
-        tile.className = 'tile' + (selectedIds.has(card.id) ? ' selected' : '');
-        tile.innerHTML = createSVG(card.shape, card.color, card.fill);
+        const isSelected = selectedIds.has(card.id);
 
-        // Multi-touch handler directly on the tile
-        tile.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          handleTap(card);
-        }, { passive: false });
+        tile.id = `tile-${card.id}`;
+        tile.className = `set-tile flex items-center justify-center bg-white rounded-2xl border aspect-square p-2 cursor-pointer shadow-xs ${
+          isSelected ? 'tile-selected' : 'border-gray-200/80 bg-white'
+        }`;
+        tile.innerHTML = renderSymbolSVG(card);
 
-        tile.addEventListener('mousedown', () => {
-          handleTap(card);
-        });
-
-        grid.appendChild(tile);
+        tile.addEventListener('click', () => handleCardClick(card));
+        gridEl.appendChild(tile);
       });
 
-      const sets = countSets();
-      document.getElementById('available-sets-pill').textContent = `${sets} ${sets === 1 ? 'Set' : 'Sets'} Available`;
+      // Update sets available count pill
+      const setsCount = countBoardSets(board);
+      setsPillText.textContent = `${setsCount} ${setsCount === 1 ? 'Set' : 'Sets'} Available`;
     }
 
-    function updateSelections() {
-      const tiles = document.querySelectorAll('.grid-board .tile');
-      board.forEach((card, idx) => {
-        if (tiles[idx]) {
-          if (selectedIds.has(card.id)) {
-            tiles[idx].classList.add('selected');
-          } else {
-            tiles[idx].classList.remove('selected');
-          }
-        }
-      });
-    }
-
-    function handleTap(card) {
+    function handleCardClick(card) {
       if (timeRemaining <= 0) return;
 
       if (selectedIds.has(card.id)) {
         selectedIds.delete(card.id);
-        updateSelections();
+        renderBoard();
         return;
       }
 
       selectedIds.add(card.id);
-      updateSelections();
+      renderBoard();
 
       if (selectedIds.size === 3) {
-        const selected = board.filter(c => selectedIds.has(c.id));
-        if (isSet(selected[0], selected[1], selected[2])) {
-          playBeep(true);
-          score++;
-          document.getElementById('game-score').textContent = score;
-
-          selected.forEach(matched => {
-            const idx = board.findIndex(b => b.id === matched.id);
-            if (deck.length === 0) deck = createFreshDeck(board);
-            board[idx] = deck.shift();
-          });
-
-          ensureBoardHasSet();
-          selectedIds.clear();
-          renderBoard();
+        const selectedCards = board.filter(c => selectedIds.has(c.id));
+        if (isSet(selectedCards[0], selectedCards[1], selectedCards[2])) {
+          handleSetSuccess(selectedCards);
         } else {
-          setTimeout(() => {
-            selectedIds.clear();
-            updateSelections();
-          }, 200);
+          handleSetError(selectedCards);
         }
       }
     }
 
-    function startGame() {
+    function handleSetSuccess(matchedCards) {
+      soundSetSuccess();
+      score++;
+      scoreEl.textContent = score;
+
+      // Animate matched cards
+      matchedCards.forEach(c => {
+        const el = document.getElementById(`tile-${c.id}`);
+        if (el) el.classList.add('tile-flash-success');
+      });
+
+      setTimeout(() => {
+        // Replace matched cards
+        matchedCards.forEach(matched => {
+          const index = board.findIndex(b => b.id === matched.id);
+          if (index !== -1) {
+            if (deck.length === 0) {
+              deck = createFreshDeck(board);
+            }
+            board[index] = deck.shift();
+          }
+        });
+
+        ensureBoardHasSet();
+        selectedIds.clear();
+        renderBoard();
+      }, 200);
+    }
+
+    function handleSetError(wrongCards) {
+      soundSetError();
+      wrongCards.forEach(c => {
+        const el = document.getElementById(`tile-${c.id}`);
+        if (el) el.classList.add('tile-shake-error');
+      });
+
+      setTimeout(() => {
+        selectedIds.clear();
+        renderBoard();
+      }, 350);
+    }
+
+    /* =====================================================================
+       GAME FLOW & LIFECYCLE
+       ===================================================================== */
+    const homeScreen = document.getElementById('home-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const gameOverOverlay = document.getElementById('game-over-overlay');
+    const modalScore = document.getElementById('modal-score');
+    const modalNewHigh = document.getElementById('modal-new-highscore');
+    const homeHighBox = document.getElementById('home-highscore-box');
+    const homeHighVal = document.getElementById('home-highscore-val');
+
+    function updateHighScoreUI() {
+      if (highScore > 0) {
+        homeHighBox.classList.remove('hidden');
+        homeHighBox.classList.add('flex');
+        homeHighVal.textContent = `${highScore} Sets`;
+      } else {
+        homeHighBox.classList.add('hidden');
+      }
+    }
+
+    function startNewGame() {
       score = 0;
       timeRemaining = 120;
       selectedIds.clear();
 
-      document.getElementById('game-score').textContent = '0';
-      document.getElementById('game-timer').textContent = '120s';
-      document.getElementById('timer-pill').classList.remove('urgent');
+      scoreEl.textContent = score;
+      timerEl.textContent = `${timeRemaining}s`;
+      timerBadge.classList.remove('text-red-500', 'border-red-300');
 
       deck = createFreshDeck([]);
       board = deck.splice(0, 9);
       ensureBoardHasSet();
 
-      document.getElementById('home-screen').classList.add('hidden');
-      document.getElementById('modal-over').classList.add('hidden');
-      document.getElementById('game-screen').classList.remove('hidden');
+      // View transition
+      homeScreen.classList.add('hidden');
+      gameOverOverlay.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
 
       renderBoard();
 
+      // Start timer countdown
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         timeRemaining--;
-        document.getElementById('game-timer').textContent = `${timeRemaining}s`;
+        timerEl.textContent = `${timeRemaining}s`;
 
         if (timeRemaining <= 15) {
-          document.getElementById('timer-pill').classList.add('urgent');
+          timerBadge.classList.add('text-red-500', 'border-red-300');
         }
 
         if (timeRemaining <= 0) {
@@ -599,39 +529,51 @@
 
     function endGame() {
       clearInterval(timerInterval);
-      document.getElementById('modal-score-val').textContent = score;
+      modalScore.textContent = score;
+
       if (score > highScore) {
         highScore = score;
-        localStorage.setItem('set_high_score', highScore);
+        localStorage.setItem('set_high_score', highScore.toString());
+        modalNewHigh.classList.remove('hidden');
+      } else {
+        modalNewHigh.classList.add('hidden');
       }
-      document.getElementById('modal-over').classList.remove('hidden');
+
+      updateHighScoreUI();
+      gameOverOverlay.classList.remove('hidden');
     }
 
-    function goHome() {
+    function exitToHome() {
       clearInterval(timerInterval);
-      if (highScore > 0) {
-        document.getElementById('home-highscore-wrap').classList.remove('hidden');
-        document.getElementById('home-highscore-val').textContent = `${highScore} Sets`;
-      }
-      document.getElementById('modal-over').classList.add('hidden');
-      document.getElementById('game-screen').classList.add('hidden');
-      document.getElementById('home-screen').classList.remove('hidden');
+      gameOverOverlay.classList.add('hidden');
+      gameScreen.classList.add('hidden');
+      homeScreen.classList.remove('hidden');
+      updateHighScoreUI();
     }
 
-    // Init Home Screen Preview
-    document.getElementById('prev-1').innerHTML = createSVG('circle', COLORS[0], 'solid');
-    document.getElementById('prev-2').innerHTML = createSVG('triangle', COLORS[1], 'striped');
-    document.getElementById('prev-3').innerHTML = createSVG('square', COLORS[2], 'outline');
+    /* =====================================================================
+       INITIALIZATION & EVENT BINDINGS
+       ===================================================================== */
+    document.getElementById('btn-play-game').addEventListener('click', startNewGame);
+    document.getElementById('btn-exit-game').addEventListener('click', exitToHome);
+    document.getElementById('btn-modal-restart').addEventListener('click', startNewGame);
+    document.getElementById('btn-modal-home').addEventListener('click', exitToHome);
 
-    if (highScore > 0) {
-      document.getElementById('home-highscore-wrap').classList.remove('hidden');
-      document.getElementById('home-highscore-val').textContent = `${highScore} Sets`;
-    }
+    // Render 3 preview symbols on Home Screen:
+    // 1. Solid Red Circle
+    // 2. Striped Green Triangle
+    // 3. Outline Purple Square
+    document.getElementById('preview-1').innerHTML = renderSymbolSVG(
+      createCard('circle', COLORS[0], 'solid')
+    );
+    document.getElementById('preview-2').innerHTML = renderSymbolSVG(
+      createCard('triangle', COLORS[1], 'striped')
+    );
+    document.getElementById('preview-3').innerHTML = renderSymbolSVG(
+      createCard('square', COLORS[2], 'outline')
+    );
 
-    document.getElementById('btn-start').onclick = startGame;
-    document.getElementById('btn-exit').onclick = goHome;
-    document.getElementById('btn-modal-home').onclick = goHome;
-    document.getElementById('btn-modal-again').onclick = startGame;
+    updateHighScoreUI();
   </script>
 </body>
 </html>
