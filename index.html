@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SET</title>
   
-  <!-- iOS Standalone Web App Meta Tags & Icon -->
+  <!-- iOS Standalone Web App Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SET">
@@ -35,7 +35,7 @@
       padding: 0;
     }
 
-    /* Lock down scrolling and bounce across all mobile engines */
+    /* Lock down scrolling, rubber-banding, and bounce */
     html, body {
       position: fixed;
       width: 100vw;
@@ -182,7 +182,7 @@
 
     .timer-wrap.urgent { color: var(--accent-red); }
 
-    /* 3x3 Grid */
+    /* Grid */
     .grid-container {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -222,7 +222,7 @@
       margin-top: 8px;
     }
 
-    /* Modal Overlay */
+    /* Modal */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -344,7 +344,7 @@
   </div>
 
   <script>
-    // Strict scroll lock: prevent any native gesture drags / iOS pull-down bounce
+    // Strict scroll lock: completely stop any finger-drag or pull-to-refresh
     document.addEventListener('touchmove', function(e) {
       e.preventDefault();
     }, { passive: false });
@@ -367,7 +367,7 @@
     let timerInterval = null;
     let highScore = parseInt(localStorage.getItem('set_high_score') || '0', 10);
 
-    // Audio synthesis
+    // Audio Haptics via Web Audio
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playBeep(success) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -393,190 +393,4 @@
 
       let pathMarkup = '';
       if (shape === 'circle') {
-        pathMarkup = `<circle cx="36" cy="36" r="26" fill="${fillAttr}" stroke="${hex}" stroke-width="4.5" />`;
-      } else if (shape === 'square') {
-        pathMarkup = `<rect x="12" y="12" width="48" height="48" rx="12" fill="${fillAttr}" stroke="${hex}" stroke-width="4.5" />`;
-      } else if (shape === 'triangle') {
-        pathMarkup = `<polygon points="36,12 62,58 10,58" stroke-linejoin="round" fill="${fillAttr}" stroke="${hex}" stroke-width="4.5" />`;
-      }
-
-      return `<svg viewBox="0 0 72 72" width="60" height="60">${pathMarkup}</svg>`;
-    }
-
-    function isSet(a, b, c) {
-      const check = (v1, v2, v3) => (v1 === v2 && v2 === v3) || (v1 !== v2 && v2 !== v3 && v1 !== v3);
-      return check(a.shape, b.shape, c.shape) &&
-             check(a.color, b.color, c.color) &&
-             check(a.fill, b.fill, c.fill);
-    }
-
-    function countAvailableSets() {
-      let count = 0;
-      for (let i = 0; i < board.length; i++) {
-        for (let j = i + 1; j < board.length; j++) {
-          for (let k = j + 1; k < board.length; k++) {
-            if (isSet(board[i], board[j], board[k])) count++;
-          }
-        }
-      }
-      return count;
-    }
-
-    function refillDeck() {
-      const activeKeys = new Set(board.map(c => `${c.shape}-${c.color}-${c.fill}`));
-      deck = [];
-      for (const s of SHAPES) {
-        for (const c of COLORS) {
-          for (const f of FILLS) {
-            const key = `${s}-${c}-${f}`;
-            if (!activeKeys.has(key)) deck.push({ shape: s, color: c, fill: f });
-          }
-        }
-      }
-      deck.sort(() => Math.random() - 0.5);
-    }
-
-    function ensureBoardHasSet() {
-      let retries = 0;
-      while (countAvailableSets() === 0 && retries < 20) {
-        refillDeck();
-        board = deck.splice(0, 9);
-        retries++;
-      }
-    }
-
-    function renderBoard() {
-      const grid = document.getElementById('grid');
-      grid.innerHTML = '';
-      board.forEach((card, idx) => {
-        const tile = document.createElement('div');
-        tile.className = 'grid-tile' + (selectedIndices.includes(idx) ? ' selected' : '');
-        tile.innerHTML = createSVGIcon(card.shape, card.color, card.fill);
-        
-        // Multi-touch handler: triggers instantly on touchstart with zero lag
-        tile.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          onTileTap(idx);
-        }, { passive: false });
-
-        // Desktop mouse fallback
-        tile.addEventListener('mousedown', (e) => {
-          onTileTap(idx);
-        });
-
-        grid.appendChild(tile);
-      });
-
-      updateSelectionStyles();
-
-      const setCount = countAvailableSets();
-      document.getElementById('available-count-display').textContent = `${setCount} ${setCount === 1 ? 'Set' : 'Sets'} Available`;
-    }
-
-    function updateSelectionStyles() {
-      const tiles = document.querySelectorAll('.grid-tile');
-      tiles.forEach((t, i) => {
-        if (selectedIndices.includes(i)) {
-          t.classList.add('selected');
-        } else {
-          t.classList.remove('selected');
-        }
-      });
-    }
-
-    function onTileTap(idx) {
-      if (selectedIndices.includes(idx)) {
-        selectedIndices = selectedIndices.filter(i => i !== idx);
-      } else {
-        selectedIndices.push(idx);
-        if (selectedIndices.length === 3) {
-          checkSelected();
-          return;
-        }
-      }
-      updateSelectionStyles();
-    }
-
-    function checkSelected() {
-      const [i1, i2, i3] = selectedIndices;
-      if (isSet(board[i1], board[i2], board[i3])) {
-        playBeep(true);
-        score++;
-        document.getElementById('score-display').textContent = `Sets: ${score}`;
-        
-        [i1, i2, i3].forEach(idx => {
-          if (deck.length === 0) refillDeck();
-          board[idx] = deck.pop();
-        });
-        ensureBoardHasSet();
-      }
-      selectedIndices = [];
-      renderBoard();
-    }
-
-    function startGame() {
-      score = 0;
-      timeRemaining = 120;
-      selectedIndices = [];
-      board = [];
-      
-      refillDeck();
-      board = deck.splice(0, 9);
-      ensureBoardHasSet();
-
-      document.getElementById('score-display').textContent = `Sets: 0`;
-      document.getElementById('timer-display').textContent = `120s`;
-      document.getElementById('timer-wrap').classList.remove('urgent');
-      
-      document.getElementById('home-screen').classList.add('hidden');
-      document.getElementById('modal-gameover').classList.add('hidden');
-      document.getElementById('game-screen').classList.remove('hidden');
-
-      renderBoard();
-
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        timeRemaining--;
-        document.getElementById('timer-display').textContent = `${timeRemaining}s`;
-        if (timeRemaining <= 15) {
-          document.getElementById('timer-wrap').classList.add('urgent');
-        }
-        if (timeRemaining <= 0) {
-          endGame();
-        }
-      }, 1000);
-    }
-
-    function endGame() {
-      clearInterval(timerInterval);
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('set_high_score', highScore);
-      }
-      document.getElementById('modal-score').textContent = `Sets Found: ${score}`;
-      document.getElementById('modal-gameover').classList.remove('hidden');
-    }
-
-    function goHome() {
-      clearInterval(timerInterval);
-      document.getElementById('high-score-display').textContent = `${highScore} Sets`;
-      document.getElementById('game-screen').classList.add('hidden');
-      document.getElementById('modal-gameover').classList.add('hidden');
-      document.getElementById('home-screen').classList.remove('hidden');
-    }
-
-    // Init Preview Icons
-    document.getElementById('preview-row').innerHTML = `
-      <div class="preview-card">${createSVGIcon('circle', 'red', 'solid')}</div>
-      <div class="preview-card">${createSVGIcon('triangle', 'green', 'striped')}</div>
-      <div class="preview-card">${createSVGIcon('square', 'purple', 'outline')}</div>
-    `;
-    document.getElementById('high-score-display').textContent = `${highScore} Sets`;
-
-    document.getElementById('btn-start').onclick = startGame;
-    document.getElementById('btn-exit').onclick = goHome;
-    document.getElementById('btn-modal-home').onclick = goHome;
-    document.getElementById('btn-modal-restart').onclick = startGame;
-  </script>
-</body>
-</html>
+        pathMarkup = `<circle cx="36" cy="36" r="26" fill="${fillAttr
