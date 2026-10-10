@@ -3,525 +3,544 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="SET">
-  <meta name="theme-color" content="#F2F2F7">
-  <title>SET - Classic 2-Minute Sprint</title>
-  <link rel="apple-touch-icon" href="icon.png">
+  <title>SET</title>
   
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- iOS Standalone Web App Meta Tags & Icon -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SET">
+  <meta name="theme-color" content="#121214">
+  <link rel="apple-touch-icon" href="icon.png">
 
   <style>
+    :root {
+      --bg: #121214;
+      --card-bg: #1c1c1e;
+      --card-selected-bg: #2c2c30;
+      --text: #f5f5f7;
+      --text-sub: #86868b;
+      --accent-red: #ee2a24;
+      --accent-green: #00a651;
+      --accent-purple: #7c287d;
+      --blue: #0a84ff;
+    }
+
     * {
-      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
       user-select: none;
       -webkit-user-select: none;
-      box-sizing: border-box;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      touch-action: manipulation;
+    /* Lock down scrolling and bounce across all mobile engines */
+    html, body {
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
       overscroll-behavior: none;
-      background-color: #F2F2F7;
-      color: #1C1C1E;
+      touch-action: none;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* Screen height fixing for iOS Safari safe areas */
-    .app-viewport {
-      min-height: 100vh;
-      min-height: 100dvh;
-      padding-top: env(safe-area-inset-top, 16px);
-      padding-bottom: env(safe-area-inset-bottom, 16px);
-      padding-left: env(safe-area-inset-left, 16px);
-      padding-right: env(safe-area-inset-right, 16px);
+    .screen {
+      width: 100%;
+      max-width: 420px;
+      height: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: env(safe-area-inset-top, 24px) 20px env(safe-area-inset-bottom, 24px) 20px;
+      touch-action: none;
     }
 
-    /* Card tile selection transitions & shadows */
-    .set-tile {
-      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.12s ease, border-color 0.12s ease;
+    .hidden { display: none !important; }
+
+    /* Home Screen */
+    #home-screen {
+      align-items: center;
+      justify-content: space-around;
+      text-align: center;
+    }
+
+    .title-banner h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--accent-red);
+      line-height: 1;
+    }
+
+    .title-banner p {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-top: 8px;
+    }
+
+    .preview-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .preview-card {
+      width: 72px;
+      height: 72px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .high-score-box {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 12px 28px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .high-score-box span {
+      display: block;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+
+    .high-score-box strong {
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent-green);
+      color: #fff;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 166, 81, 0.35);
       touch-action: manipulation;
     }
 
-    .set-tile:active {
-      transform: scale(0.95);
+    .btn-primary:active { transform: scale(0.97); }
+
+    /* Game Screen */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 8px 0;
     }
 
-    .tile-selected {
-      border-color: #007AFF !important;
-      border-width: 3.5px !important;
-      background-color: rgba(0, 122, 255, 0.08) !important;
-      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25);
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-sub);
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      touch-action: manipulation;
     }
 
-    .tile-flash-success {
-      animation: flash-green 0.35s ease;
+    .score-badge {
+      font-size: 1.25rem;
+      font-weight: 800;
     }
 
-    @keyframes flash-green {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.06); border-color: #34C759; background-color: rgba(52, 199, 89, 0.15); }
-      100% { transform: scale(1); }
+    .timer-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      padding-left: 2px;
+      margin-bottom: 8px;
     }
 
-    .tile-shake-error {
-      animation: shake 0.32s ease-in-out;
+    .timer-wrap.urgent { color: var(--accent-red); }
+
+    /* 3x3 Grid */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      aspect-ratio: 1;
+      touch-action: none;
     }
 
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
+    .grid-tile {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      touch-action: none;
+      transition: border-color 0.1s ease, background 0.1s ease;
+    }
+
+    .grid-tile.selected {
+      border-color: var(--blue);
+      background: var(--card-selected-bg);
+    }
+
+    .available-badge {
+      align-self: center;
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-top: 8px;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 10;
+      touch-action: none;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 28px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .modal-card h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .modal-card p {
+      font-size: 1.15rem;
+      color: var(--text-sub);
+      margin-bottom: 24px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: #2c2c30;
+      color: #fff;
     }
   </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen">
+<body>
 
-  <!-- Reusable SVG hatching patterns for authentic striped cards -->
-  <svg width="0" height="0" class="absolute block pointer-events-none" style="position: absolute; width: 0; height: 0;">
+  <!-- Striped SVG Patterns -->
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
     <defs>
-      <!-- Red Hatching Pattern (#EE2A24) -->
       <pattern id="stripe-red" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-        <line x1="0" y1="0" x2="0" y2="8" stroke="#EE2A24" stroke-width="2.6" />
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#ee2a24" stroke-width="2.5" />
       </pattern>
-      <!-- Green Hatching Pattern (#00A651) -->
       <pattern id="stripe-green" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-        <line x1="0" y1="0" x2="0" y2="8" stroke="#00A651" stroke-width="2.6" />
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#00a651" stroke-width="2.5" />
       </pattern>
-      <!-- Purple Hatching Pattern (#7C287D) -->
       <pattern id="stripe-purple" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-        <line x1="0" y1="0" x2="0" y2="8" stroke="#7C287D" stroke-width="2.6" />
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#7c287d" stroke-width="2.5" />
       </pattern>
     </defs>
   </svg>
 
-  <div class="app-viewport w-full max-w-md mx-auto flex flex-col justify-between">
-    
-    <!-- ============================================== -->
-    <!-- HOME SCREEN                                    -->
-    <!-- ============================================== -->
-    <div id="home-screen" class="flex flex-col justify-between items-center h-full flex-1 py-8 px-4 text-center">
-      <div class="my-auto flex flex-col items-center">
-        <!-- Title & Subtitle -->
-        <h1 class="text-7xl font-black tracking-tight text-[#EE2A24] mb-2 drop-shadow-sm">SET</h1>
-        <p class="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-10">Classic 2-Minute Sprint</p>
+  <!-- Home Screen -->
+  <div id="home-screen" class="screen">
+    <div class="title-banner">
+      <h1>SET</h1>
+      <p>Classic 2-Minute Sprint</p>
+    </div>
 
-        <!-- Decorative authentic preview symbols -->
-        <div class="flex items-center justify-center gap-6 mb-12 p-5 bg-white/70 backdrop-blur-md rounded-2xl shadow-sm border border-gray-200/60">
-          <div class="w-16 h-16" id="preview-1"></div>
-          <div class="w-16 h-16" id="preview-2"></div>
-          <div class="w-16 h-16" id="preview-3"></div>
-        </div>
+    <div class="preview-row" id="preview-row"></div>
 
-        <!-- High Score Badge -->
-        <div id="home-highscore-box" class="hidden flex-col items-center bg-white/90 backdrop-blur px-8 py-3.5 rounded-2xl shadow-sm border border-gray-200">
-          <span class="text-xs font-bold text-gray-400 tracking-wider">PERSONAL BEST</span>
-          <span id="home-highscore-val" class="text-2xl font-black text-gray-800">0 Sets</span>
-        </div>
+    <div class="high-score-box">
+      <span>HIGH SCORE</span>
+      <strong id="high-score-display">0 Sets</strong>
+    </div>
+
+    <button class="btn-primary" id="btn-start">Play Game</button>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen hidden">
+    <div>
+      <div class="top-bar">
+        <button class="icon-btn" id="btn-exit">✕</button>
+        <div class="score-badge" id="score-display">Sets: 0</div>
       </div>
-
-      <!-- Play Button -->
-      <div class="w-full px-4 mb-4">
-        <button id="btn-play-game" class="w-full py-4 text-xl font-bold text-white bg-[#00A651] active:bg-[#008f45] rounded-2xl shadow-lg shadow-green-600/25 transition-all transform active:scale-95">
-          Play Game
-        </button>
+      <div class="timer-wrap" id="timer-wrap">
+        <span>⏱</span>
+        <span id="timer-display">120s</span>
       </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- GAME SCREEN                                    -->
-    <!-- ============================================== -->
-    <div id="game-screen" class="hidden flex flex-col justify-between items-center h-full flex-1 py-2 px-3">
-      
-      <!-- Top Navigation Bar -->
-      <div class="w-full flex items-center justify-between px-2 pt-2 pb-2">
-        <button id="btn-exit-game" class="p-2 text-gray-400 active:text-gray-600 rounded-full transition-colors" aria-label="Exit Game">
-          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
+    <div class="grid-container" id="grid"></div>
 
-        <div class="text-xl font-bold tracking-tight text-gray-800">
-          Sets: <span id="game-score" class="font-extrabold">0</span>
-        </div>
-      </div>
+    <div class="available-badge" id="available-count-display">0 Sets Available</div>
+  </div>
 
-      <!-- Grid Wrapper with Timer at Top-Left & Available Sets at Bottom -->
-      <div class="w-full flex flex-col items-center my-auto">
-        
-        <!-- Timer counter near the top left corner of the grid -->
-        <div class="w-full flex items-center justify-start px-2 mb-2">
-          <div id="timer-badge" class="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur rounded-xl shadow-xs border border-gray-200 text-gray-800 font-bold text-base transition-colors">
-            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span id="game-timer" class="tabular-nums font-mono">120s</span>
-          </div>
-        </div>
-
-        <!-- 3x3 Grid Layout -->
-        <div id="game-grid" class="w-full grid grid-cols-3 gap-2.5 sm:gap-3.5 p-1 aspect-square max-w-[390px]">
-          <!-- 9 dynamic cards will be rendered here -->
-        </div>
-
-        <!-- Available sets indicator near the bottom of the grid -->
-        <div class="mt-4 flex items-center justify-center">
-          <div id="sets-available-pill" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow-xs border border-gray-200/80 text-xs font-semibold text-gray-500">
-            <svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-            </svg>
-            <span id="available-sets-text">Calculating...</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Spacer to center grid symmetrically -->
-      <div class="h-6"></div>
-    </div>
-
-    <!-- ============================================== -->
-    <!-- GAME OVER OVERLAY MODAL                        -->
-    <!-- ============================================== -->
-    <div id="game-over-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-6">
-      <div class="bg-white rounded-3xl p-7 w-full max-w-sm text-center shadow-2xl border border-gray-100 flex flex-col items-center animate-in fade-in duration-200">
-        <h2 class="text-3xl font-black text-gray-900 mb-1">Time's Up!</h2>
-        <p class="text-sm font-semibold text-gray-400 mb-5">Sprint Finished</p>
-
-        <div class="text-5xl font-black text-[#00A651] mb-2" id="modal-score">0</div>
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Sets Found</p>
-
-        <div id="modal-new-highscore" class="hidden mb-6 px-4 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-full">
-          🎉 New High Score! 🎉
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 w-full mt-2">
-          <button id="btn-modal-home" class="py-3 px-4 font-bold text-gray-700 bg-gray-100 active:bg-gray-200 rounded-xl transition-all">
-            Home
-          </button>
-          <button id="btn-modal-restart" class="py-3 px-4 font-bold text-white bg-[#00A651] active:bg-[#008f45] rounded-xl shadow-md transition-all">
-            Play Again
-          </button>
-        </div>
+  <!-- Game Over Modal -->
+  <div id="modal-gameover" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2>Time's Up!</h2>
+      <p id="modal-score">Sets Found: 0</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="btn-modal-home">Home</button>
+        <button class="btn-primary" id="btn-modal-restart" style="padding: 12px;">Play Again</button>
       </div>
     </div>
-
   </div>
 
   <script>
-    /* =====================================================================
-       GAME CONSTANTS & AUDIO ENGINE
-       ===================================================================== */
+    // Strict scroll lock: prevent any native gesture drags / iOS pull-down bounce
+    document.addEventListener('touchmove', function(e) {
+      e.preventDefault();
+    }, { passive: false });
+
     const SHAPES = ['circle', 'square', 'triangle'];
-    const COLORS = [
-      { name: 'red', hex: '#EE2A24', pattern: 'stripe-red' },
-      { name: 'green', hex: '#00A651', pattern: 'stripe-green' },
-      { name: 'purple', hex: '#7C287D', pattern: 'stripe-purple' }
-    ];
+    const COLORS = ['red', 'green', 'purple'];
     const FILLS = ['solid', 'striped', 'outline'];
 
-    // Web Audio synthesizer for haptic chime on set discovery
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
+    const COLOR_HEX = {
+      red: '#ee2a24',
+      green: '#00a651',
+      purple: '#7c287d'
+    };
 
-    function playTone(freq, type = 'sine', duration = 0.12, delay = 0) {
-      try {
-        if (!audioCtx) audioCtx = new AudioContext();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
-
-        gain.gain.setValueAtTime(0.18, audioCtx.currentTime + delay);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + delay + duration);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start(audioCtx.currentTime + delay);
-        osc.stop(audioCtx.currentTime + delay + duration);
-      } catch (e) {
-        // Audio may be blocked before interaction; gracefully fail
-      }
-    }
-
-    function soundSetSuccess() {
-      playTone(523.25, 'triangle', 0.12, 0);       // C5
-      playTone(659.25, 'triangle', 0.14, 0.08);    // E5
-      playTone(783.99, 'triangle', 0.22, 0.16);    // G5
-      if (navigator.vibrate) navigator.vibrate([40, 30, 60]);
-    }
-
-    function soundSetError() {
-      playTone(220, 'sawtooth', 0.18, 0);         // Low buzz
-      if (navigator.vibrate) navigator.vibrate(80);
-    }
-
-    /* =====================================================================
-       CARD DATA STRUCTURE & SET VALIDATION
-       ===================================================================== */
-    let cardIdCounter = 1;
-    function createCard(shape, color, fill) {
-      return {
-        id: cardIdCounter++,
-        shape, // 'circle' | 'square' | 'triangle'
-        color, // color object
-        fill   // 'solid' | 'striped' | 'outline'
-      };
-    }
-
-    function isSet(a, b, c) {
-      const validShape = (a.shape === b.shape && b.shape === c.shape) ||
-                         (a.shape !== b.shape && b.shape !== c.shape && a.shape !== c.shape);
-      const validColor = (a.color.name === b.color.name && b.color.name === c.color.name) ||
-                         (a.color.name !== b.color.name && b.color.name !== c.color.name && a.color.name !== c.color.name);
-      const validFill  = (a.fill === b.fill && b.fill === c.fill) ||
-                         (a.fill !== b.fill && b.fill !== c.fill && a.fill !== c.fill);
-      return validShape && validColor && validFill;
-    }
-
-    /* =====================================================================
-       SVG SHAPE GENERATOR
-       ===================================================================== */
-    function renderSymbolSVG(card) {
-      const { shape, color, fill } = card;
-      let fillVal = 'none';
-
-      if (fill === 'solid') {
-        fillVal = color.hex;
-      } else if (fill === 'striped') {
-        fillVal = `url(#${color.pattern})`;
-      } else if (fill === 'outline') {
-        fillVal = 'none';
-      }
-
-      const strokeVal = color.hex;
-      const strokeW = '4.5';
-
-      let inner = '';
-      if (shape === 'circle') {
-        inner = `<circle cx="50" cy="50" r="37" fill="${fillVal}" stroke="${strokeVal}" stroke-width="${strokeW}" />`;
-      } else if (shape === 'square') {
-        inner = `<rect x="13" y="13" width="74" height="74" rx="14" ry="14" fill="${fillVal}" stroke="${strokeVal}" stroke-width="${strokeW}" />`;
-      } else if (shape === 'triangle') {
-        // Centered equilateral triangle with rounded caps
-        inner = `<polygon points="50,15 85,78 15,78" stroke-linejoin="round" fill="${fillVal}" stroke="${strokeVal}" stroke-width="${strokeW}" />`;
-      }
-
-      return `
-        <svg viewBox="0 0 100 100" class="w-full h-full pointer-events-none p-1.5" style="overflow: visible;">
-          ${inner}
-        </svg>
-      `;
-    }
-
-    /* =====================================================================
-       GAME STATE & DECK MANAGEMENT
-       ===================================================================== */
     let deck = [];
-    let board = []; // 9 cards
-    let selectedIds = new Set();
+    let board = [];
+    let selectedIndices = [];
     let score = 0;
     let timeRemaining = 120;
     let timerInterval = null;
     let highScore = parseInt(localStorage.getItem('set_high_score') || '0', 10);
 
-    function createFreshDeck(excludeCards = []) {
-      const fullDeck = [];
-      for (const s of SHAPES) {
-        for (const c of COLORS) {
-          for (const f of FILLS) {
-            const alreadyOnBoard = excludeCards.some(
-              b => b && b.shape === s && b.color.name === c.name && b.fill === f
-            );
-            if (!alreadyOnBoard) {
-              fullDeck.push(createCard(s, c, f));
-            }
-          }
-        }
+    // Audio synthesis
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(success) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      if (success) {
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
       }
-      // Shuffle array using Fisher-Yates
-      for (let i = fullDeck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [fullDeck[i], fullDeck[j]] = [fullDeck[j], fullDeck[i]];
-      }
-      return fullDeck;
     }
 
-    function countBoardSets(cards = board) {
-      if (cards.length < 3) return 0;
+    function createSVGIcon(shape, color, fill) {
+      const hex = COLOR_HEX[color];
+      let fillAttr = 'none';
+      if (fill === 'solid') fillAttr = hex;
+      else if (fill === 'striped') fillAttr = `url(#stripe-${color})`;
+
+      let pathMarkup = '';
+      if (shape === 'circle') {
+        pathMarkup = `<circle cx="36" cy="36" r="26" fill="${fillAttr}" stroke="${hex}" stroke-width="4.5" />`;
+      } else if (shape === 'square') {
+        pathMarkup = `<rect x="12" y="12" width="48" height="48" rx="12" fill="${fillAttr}" stroke="${hex}" stroke-width="4.5" />`;
+      } else if (shape === 'triangle') {
+        pathMarkup = `<polygon points="36,12 62,58 10,58" stroke-linejoin="round" fill="${fillAttr}" stroke="${hex}" stroke-width="4.5" />`;
+      }
+
+      return `<svg viewBox="0 0 72 72" width="60" height="60">${pathMarkup}</svg>`;
+    }
+
+    function isSet(a, b, c) {
+      const check = (v1, v2, v3) => (v1 === v2 && v2 === v3) || (v1 !== v2 && v2 !== v3 && v1 !== v3);
+      return check(a.shape, b.shape, c.shape) &&
+             check(a.color, b.color, c.color) &&
+             check(a.fill, b.fill, c.fill);
+    }
+
+    function countAvailableSets() {
       let count = 0;
-      for (let i = 0; i < cards.length; i++) {
-        for (let j = i + 1; j < cards.length; j++) {
-          for (let k = j + 1; k < cards.length; k++) {
-            if (isSet(cards[i], cards[j], cards[k])) {
-              count++;
-            }
+      for (let i = 0; i < board.length; i++) {
+        for (let j = i + 1; j < board.length; j++) {
+          for (let k = j + 1; k < board.length; k++) {
+            if (isSet(board[i], board[j], board[k])) count++;
           }
         }
       }
       return count;
     }
 
-    function ensureBoardHasSet() {
-      let attempts = 0;
-      while (countBoardSets(board) === 0 && attempts < 25) {
-        // Collect current board and deck, reshuffle thoroughly
-        deck = createFreshDeck([]);
-        board = deck.splice(0, 9);
-        attempts++;
-      }
-    }
-
-    /* =====================================================================
-       BOARD RENDERING & SELECTION HANDLING
-       ===================================================================== */
-    const gridEl = document.getElementById('game-grid');
-    const scoreEl = document.getElementById('game-score');
-    const timerEl = document.getElementById('game-timer');
-    const timerBadge = document.getElementById('timer-badge');
-    const setsPillText = document.getElementById('available-sets-text');
-
-    function renderBoard() {
-      gridEl.innerHTML = '';
-      board.forEach((card, index) => {
-        const tile = document.createElement('div');
-        const isSelected = selectedIds.has(card.id);
-
-        tile.id = `tile-${card.id}`;
-        tile.className = `set-tile flex items-center justify-center bg-white rounded-2xl border aspect-square p-2 cursor-pointer shadow-xs ${
-          isSelected ? 'tile-selected' : 'border-gray-200/80 bg-white'
-        }`;
-        tile.innerHTML = renderSymbolSVG(card);
-
-        tile.addEventListener('click', () => handleCardClick(card));
-        gridEl.appendChild(tile);
-      });
-
-      // Update sets available count pill
-      const setsCount = countBoardSets(board);
-      setsPillText.textContent = `${setsCount} ${setsCount === 1 ? 'Set' : 'Sets'} Available`;
-    }
-
-    function handleCardClick(card) {
-      if (timeRemaining <= 0) return;
-
-      if (selectedIds.has(card.id)) {
-        selectedIds.delete(card.id);
-        renderBoard();
-        return;
-      }
-
-      selectedIds.add(card.id);
-      renderBoard();
-
-      if (selectedIds.size === 3) {
-        const selectedCards = board.filter(c => selectedIds.has(c.id));
-        if (isSet(selectedCards[0], selectedCards[1], selectedCards[2])) {
-          handleSetSuccess(selectedCards);
-        } else {
-          handleSetError(selectedCards);
+    function refillDeck() {
+      const activeKeys = new Set(board.map(c => `${c.shape}-${c.color}-${c.fill}`));
+      deck = [];
+      for (const s of SHAPES) {
+        for (const c of COLORS) {
+          for (const f of FILLS) {
+            const key = `${s}-${c}-${f}`;
+            if (!activeKeys.has(key)) deck.push({ shape: s, color: c, fill: f });
+          }
         }
       }
+      deck.sort(() => Math.random() - 0.5);
     }
 
-    function handleSetSuccess(matchedCards) {
-      soundSetSuccess();
-      score++;
-      scoreEl.textContent = score;
-
-      // Animate matched cards
-      matchedCards.forEach(c => {
-        const el = document.getElementById(`tile-${c.id}`);
-        if (el) el.classList.add('tile-flash-success');
-      });
-
-      setTimeout(() => {
-        // Replace matched cards
-        matchedCards.forEach(matched => {
-          const index = board.findIndex(b => b.id === matched.id);
-          if (index !== -1) {
-            if (deck.length === 0) {
-              deck = createFreshDeck(board);
-            }
-            board[index] = deck.shift();
-          }
-        });
-
-        ensureBoardHasSet();
-        selectedIds.clear();
-        renderBoard();
-      }, 200);
-    }
-
-    function handleSetError(wrongCards) {
-      soundSetError();
-      wrongCards.forEach(c => {
-        const el = document.getElementById(`tile-${c.id}`);
-        if (el) el.classList.add('tile-shake-error');
-      });
-
-      setTimeout(() => {
-        selectedIds.clear();
-        renderBoard();
-      }, 350);
-    }
-
-    /* =====================================================================
-       GAME FLOW & LIFECYCLE
-       ===================================================================== */
-    const homeScreen = document.getElementById('home-screen');
-    const gameScreen = document.getElementById('game-screen');
-    const gameOverOverlay = document.getElementById('game-over-overlay');
-    const modalScore = document.getElementById('modal-score');
-    const modalNewHigh = document.getElementById('modal-new-highscore');
-    const homeHighBox = document.getElementById('home-highscore-box');
-    const homeHighVal = document.getElementById('home-highscore-val');
-
-    function updateHighScoreUI() {
-      if (highScore > 0) {
-        homeHighBox.classList.remove('hidden');
-        homeHighBox.classList.add('flex');
-        homeHighVal.textContent = `${highScore} Sets`;
-      } else {
-        homeHighBox.classList.add('hidden');
+    function ensureBoardHasSet() {
+      let retries = 0;
+      while (countAvailableSets() === 0 && retries < 20) {
+        refillDeck();
+        board = deck.splice(0, 9);
+        retries++;
       }
     }
 
-    function startNewGame() {
+    function renderBoard() {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      board.forEach((card, idx) => {
+        const tile = document.createElement('div');
+        tile.className = 'grid-tile' + (selectedIndices.includes(idx) ? ' selected' : '');
+        tile.innerHTML = createSVGIcon(card.shape, card.color, card.fill);
+        
+        // Multi-touch handler: triggers instantly on touchstart with zero lag
+        tile.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          onTileTap(idx);
+        }, { passive: false });
+
+        // Desktop mouse fallback
+        tile.addEventListener('mousedown', (e) => {
+          onTileTap(idx);
+        });
+
+        grid.appendChild(tile);
+      });
+
+      updateSelectionStyles();
+
+      const setCount = countAvailableSets();
+      document.getElementById('available-count-display').textContent = `${setCount} ${setCount === 1 ? 'Set' : 'Sets'} Available`;
+    }
+
+    function updateSelectionStyles() {
+      const tiles = document.querySelectorAll('.grid-tile');
+      tiles.forEach((t, i) => {
+        if (selectedIndices.includes(i)) {
+          t.classList.add('selected');
+        } else {
+          t.classList.remove('selected');
+        }
+      });
+    }
+
+    function onTileTap(idx) {
+      if (selectedIndices.includes(idx)) {
+        selectedIndices = selectedIndices.filter(i => i !== idx);
+      } else {
+        selectedIndices.push(idx);
+        if (selectedIndices.length === 3) {
+          checkSelected();
+          return;
+        }
+      }
+      updateSelectionStyles();
+    }
+
+    function checkSelected() {
+      const [i1, i2, i3] = selectedIndices;
+      if (isSet(board[i1], board[i2], board[i3])) {
+        playBeep(true);
+        score++;
+        document.getElementById('score-display').textContent = `Sets: ${score}`;
+        
+        [i1, i2, i3].forEach(idx => {
+          if (deck.length === 0) refillDeck();
+          board[idx] = deck.pop();
+        });
+        ensureBoardHasSet();
+      }
+      selectedIndices = [];
+      renderBoard();
+    }
+
+    function startGame() {
       score = 0;
       timeRemaining = 120;
-      selectedIds.clear();
-
-      scoreEl.textContent = score;
-      timerEl.textContent = `${timeRemaining}s`;
-      timerBadge.classList.remove('text-red-500', 'border-red-300');
-
-      deck = createFreshDeck([]);
+      selectedIndices = [];
+      board = [];
+      
+      refillDeck();
       board = deck.splice(0, 9);
       ensureBoardHasSet();
 
-      // View transition
-      homeScreen.classList.add('hidden');
-      gameOverOverlay.classList.add('hidden');
-      gameScreen.classList.remove('hidden');
+      document.getElementById('score-display').textContent = `Sets: 0`;
+      document.getElementById('timer-display').textContent = `120s`;
+      document.getElementById('timer-wrap').classList.remove('urgent');
+      
+      document.getElementById('home-screen').classList.add('hidden');
+      document.getElementById('modal-gameover').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
 
       renderBoard();
 
-      // Start timer countdown
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         timeRemaining--;
-        timerEl.textContent = `${timeRemaining}s`;
-
+        document.getElementById('timer-display').textContent = `${timeRemaining}s`;
         if (timeRemaining <= 15) {
-          timerBadge.classList.add('text-red-500', 'border-red-300');
+          document.getElementById('timer-wrap').classList.add('urgent');
         }
-
         if (timeRemaining <= 0) {
           endGame();
         }
@@ -530,51 +549,34 @@
 
     function endGame() {
       clearInterval(timerInterval);
-      modalScore.textContent = score;
-
       if (score > highScore) {
         highScore = score;
-        localStorage.setItem('set_high_score', highScore.toString());
-        modalNewHigh.classList.remove('hidden');
-      } else {
-        modalNewHigh.classList.add('hidden');
+        localStorage.setItem('set_high_score', highScore);
       }
-
-      updateHighScoreUI();
-      gameOverOverlay.classList.remove('hidden');
+      document.getElementById('modal-score').textContent = `Sets Found: ${score}`;
+      document.getElementById('modal-gameover').classList.remove('hidden');
     }
 
-    function exitToHome() {
+    function goHome() {
       clearInterval(timerInterval);
-      gameOverOverlay.classList.add('hidden');
-      gameScreen.classList.add('hidden');
-      homeScreen.classList.remove('hidden');
-      updateHighScoreUI();
+      document.getElementById('high-score-display').textContent = `${highScore} Sets`;
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('modal-gameover').classList.add('hidden');
+      document.getElementById('home-screen').classList.remove('hidden');
     }
 
-    /* =====================================================================
-       INITIALIZATION & EVENT BINDINGS
-       ===================================================================== */
-    document.getElementById('btn-play-game').addEventListener('click', startNewGame);
-    document.getElementById('btn-exit-game').addEventListener('click', exitToHome);
-    document.getElementById('btn-modal-restart').addEventListener('click', startNewGame);
-    document.getElementById('btn-modal-home').addEventListener('click', exitToHome);
+    // Init Preview Icons
+    document.getElementById('preview-row').innerHTML = `
+      <div class="preview-card">${createSVGIcon('circle', 'red', 'solid')}</div>
+      <div class="preview-card">${createSVGIcon('triangle', 'green', 'striped')}</div>
+      <div class="preview-card">${createSVGIcon('square', 'purple', 'outline')}</div>
+    `;
+    document.getElementById('high-score-display').textContent = `${highScore} Sets`;
 
-    // Render 3 preview symbols on Home Screen:
-    // 1. Solid Red Circle
-    // 2. Striped Green Triangle
-    // 3. Outline Purple Square
-    document.getElementById('preview-1').innerHTML = renderSymbolSVG(
-      createCard('circle', COLORS[0], 'solid')
-    );
-    document.getElementById('preview-2').innerHTML = renderSymbolSVG(
-      createCard('triangle', COLORS[1], 'striped')
-    );
-    document.getElementById('preview-3').innerHTML = renderSymbolSVG(
-      createCard('square', COLORS[2], 'outline')
-    );
-
-    updateHighScoreUI();
+    document.getElementById('btn-start').onclick = startGame;
+    document.getElementById('btn-exit').onclick = goHome;
+    document.getElementById('btn-modal-home').onclick = goHome;
+    document.getElementById('btn-modal-restart').onclick = startGame;
   </script>
 </body>
 </html>
