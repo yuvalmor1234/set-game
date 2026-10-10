@@ -8,109 +8,224 @@
   <meta name="apple-mobile-web-app-title" content="SET">
   <meta name="theme-color" content="#F2F2F7">
   <title>SET - Classic 2-Minute Sprint</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="apple-touch-icon" href="icon.png">
 
   <style>
     * {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-select: none;
-      -webkit-touch-callout: none;
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     html, body {
-      position: fixed;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
       overflow: hidden;
-      overscroll-behavior: none;
-      touch-action: none;
       background-color: #F2F2F7;
       color: #1C1C1E;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* Screen height fixing for iOS Safari safe areas */
-    .app-viewport {
+    .app-container {
       width: 100%;
+      max-width: 420px;
       height: 100%;
-      max-height: 100dvh;
-      overflow: hidden;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: max(env(safe-area-inset-top), 16px) 16px max(env(safe-area-inset-bottom), 16px) 16px;
+      position: relative;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Home Screen */
+    #home-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      text-align: center;
+      padding: 24px 0 12px 0;
+    }
+
+    .home-header h1 {
+      font-size: 4.5rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      color: #EE2A24;
+      line-height: 1;
+    }
+
+    .home-header p {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #8E8E93;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    .preview-box {
+      display: flex;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      padding: 16px 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    .preview-tile {
+      width: 60px;
+      height: 60px;
+    }
+
+    .highscore-card {
+      background: white;
+      border-radius: 16px;
+      padding: 12px 28px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .highscore-card span {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #8E8E93;
+      letter-spacing: 1px;
+    }
+
+    .highscore-card strong {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #1C1C1E;
+    }
+
+    .btn-play {
+      width: 100%;
+      padding: 16px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: white;
+      background: #00A651;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0, 166, 81, 0.3);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .btn-play:active {
+      transform: scale(0.97);
+    }
+
+    /* Game Screen */
+    #game-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      padding: 8px 0;
+    }
+
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0 4px;
+    }
+
+    .btn-exit {
+      background: none;
+      border: none;
+      color: #8E8E93;
+      font-size: 1.7rem;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .score-label {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #1C1C1E;
+    }
+
+    .board-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .timer-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0 4px;
+      margin-bottom: 10px;
+    }
+
+    .timer-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-weight: 800;
+      font-size: 1rem;
+      font-variant-numeric: tabular-nums;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .timer-pill.urgent {
+      color: #EE2A24;
+      border-color: rgba(238, 42, 36, 0.3);
+    }
+
+    /* 3x3 Grid Locked Down */
+    .grid-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      aspect-ratio: 1;
+      touch-action: none; /* Prevents any finger drag from scrolling */
+    }
+
+    .tile {
+      background: white;
+      border-radius: 18px;
+      border: 1.5px solid rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
       touch-action: none;
-      padding-top: env(safe-area-inset-top, 16px);
-      padding-bottom: env(safe-area-inset-bottom, 16px);
-      padding-left: env(safe-area-inset-left, 16px);
-      padding-right: env(safe-area-inset-right, 16px);
+      transition: transform 0.1s ease, border-color 0.1s ease, background 0.1s ease;
+      padding: 8px;
     }
 
-    /* Card tile selection transitions & shadows */
-    .set-tile {
-      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.12s ease, border-color 0.12s ease;
-      touch-action: none;
+    .tile.selected {
+      border: 3.5px solid #007AFF !important;
+      background: rgba(0, 122, 255, 0.08);
+      transform: scale(0.96);
     }
 
-    .set-tile:active {
-      transform: scale(0.95);
-    }
-
-    .tile-selected {
-      border-color: #007AFF !important;
-      border-width: 3.5px !important;
-      background-color: rgba(0, 122, 255, 0.08) !important;
-      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25);
-    }
-
-    .tile-flash-success {
-      animation: flash-green 0.35s ease;
-    }
-
-    @keyframes flash-green {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.06); border-color: #34C759; background-color: rgba(52, 199, 89, 0.15); }
-      100% { transform: scale(1); }
-    }
-
-    .tile-shake-error {
-      animation: shake 0.32s ease-in-out;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
-    }
-  </style>
-</head>
-<body class="flex flex-col items-center justify-center min-h-screen">
-
-  <!-- Reusable SVG hatching patterns for authentic striped cards -->
-  <svg width="0" height="0" class="absolute block pointer-events-none" style="position: absolute; width: 0; height: 0;">
-    <defs>
-      <!-- Red Hatching Pattern (#EE2A24) -->
-      <pattern id="stripe-red" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-        <line x1="0" y1="0" x2="0" y2="8" stroke="#EE2A24" stroke-width="2.6" />
-      </pattern>
-      <!-- Green Hatching Pattern (#00A651) -->
-      <pattern id="stripe-green" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-        <line x1="0" y1="0" x2="0" y2="8" stroke="#00A651" stroke-width="2.6" />
-      </pattern>
-      <!-- Purple Hatching Pattern (#7C287D) -->
-      <pattern id="stripe-purple" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-        <line x1="0" y1="0" x2="0" y2="8" stroke="#7C287D" stroke-width="2.6" />
-      </pattern>
-    </defs>
-  </svg>
-
-  <div class="app-viewport w-full max-w-md mx-auto flex flex-col justify-between">
-    
-    <!-- ============================================== -->
-    <!-- HOME SCREEN                                    -->
-    <!-- ============================================== -->
-    <div id="home-screen" class="flex flex-col justify-between items-center h-full flex-1 py-8 px-4 text-center">
-      <div class="my-auto flex flex-col items-center">
-        <!-- Title & Subtitle -->
-        <h1 class="text-7xl font-black tracking-tight text-[#EE2A24] mb-2 drop-shadow-sm">SET</h1>
-        <p class="
+    .available-pill {
+      margin-top: 14px;
+      background: rgba(255, 255,
