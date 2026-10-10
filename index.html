@@ -20,98 +20,100 @@
       padding: 0;
     }
 
+    /* Lock body strictly to the physical device viewport */
     html, body {
+      position: fixed;
+      inset: 0;
       width: 100%;
       height: 100%;
-      height: 100dvh;
       overflow: hidden;
       background-color: #F2F2F7;
       color: #1C1C1E;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    .app-container {
+    .app-viewport {
+      position: absolute;
+      inset: 0;
       width: 100%;
-      max-width: 420px;
-      height: 100%;
+      max-width: 414px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
       padding: max(env(safe-area-inset-top), 16px) 16px max(env(safe-area-inset-bottom), 16px) 16px;
-      position: relative;
     }
 
     .hidden { display: none !important; }
 
-    /* Home Screen */
+    /* Home Screen Layout */
     #home-screen {
+      flex: 1;
       display: flex;
       flex-direction: column;
+      justify-content: space-around;
       align-items: center;
-      justify-content: space-between;
-      height: 100%;
       text-align: center;
-      padding: 24px 0 12px 0;
+      padding: 10px 0;
     }
 
-    .home-header h1 {
-      font-size: 4.5rem;
+    .title-area h1 {
+      font-size: 4.2rem;
       font-weight: 900;
       letter-spacing: -1px;
       color: #EE2A24;
       line-height: 1;
     }
 
-    .home-header p {
-      font-size: 0.85rem;
+    .title-area p {
+      font-size: 0.8rem;
       font-weight: 700;
       color: #8E8E93;
       letter-spacing: 2px;
       text-transform: uppercase;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .preview-box {
       display: flex;
       gap: 16px;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
-      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      padding: 14px 18px;
       border-radius: 20px;
       border: 1px solid rgba(0,0,0,0.06);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
 
     .preview-tile {
-      width: 60px;
-      height: 60px;
+      width: 58px;
+      height: 58px;
     }
 
     .highscore-card {
       background: white;
-      border-radius: 16px;
-      padding: 12px 28px;
+      border-radius: 14px;
+      padding: 8px 24px;
       border: 1px solid rgba(0,0,0,0.06);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
 
     .highscore-card span {
       display: block;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
       color: #8E8E93;
       letter-spacing: 1px;
     }
 
     .highscore-card strong {
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       font-weight: 800;
       color: #1C1C1E;
     }
 
     .btn-play {
       width: 100%;
+      max-width: 320px;
       padding: 16px;
       font-size: 1.25rem;
       font-weight: 700;
@@ -119,22 +121,23 @@
       background: #00A651;
       border: none;
       border-radius: 20px;
-      box-shadow: 0 6px 20px rgba(0, 166, 81, 0.3);
+      box-shadow: 0 6px 18px rgba(0, 166, 81, 0.3);
       cursor: pointer;
-      transition: transform 0.1s ease;
+      touch-action: manipulation;
     }
 
     .btn-play:active {
       transform: scale(0.97);
     }
 
-    /* Game Screen */
+    /* Game Screen Layout */
     #game-screen {
+      flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: 100%;
-      padding: 8px 0;
+      align-items: center;
+      padding: 4px 0;
     }
 
     .top-nav {
@@ -151,7 +154,7 @@
       color: #8E8E93;
       font-size: 1.7rem;
       cursor: pointer;
-      padding: 4px;
+      padding: 6px;
       display: flex;
       align-items: center;
     }
@@ -162,19 +165,18 @@
       color: #1C1C1E;
     }
 
-    .board-wrapper {
+    .board-center {
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 100%;
     }
 
     .timer-row {
       display: flex;
-      align-items: center;
       width: 100%;
       padding: 0 4px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .timer-pill {
@@ -184,11 +186,10 @@
       background: white;
       border: 1px solid rgba(0,0,0,0.08);
       border-radius: 12px;
-      padding: 6px 12px;
+      padding: 5px 12px;
       font-weight: 800;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-variant-numeric: tabular-nums;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
 
     .timer-pill.urgent {
@@ -196,14 +197,15 @@
       border-color: rgba(238, 42, 36, 0.3);
     }
 
-    /* 3x3 Grid Locked Down */
+    /* 3x3 Grid - STRICT TOUCH LOCK (never scrolls/moves) */
     .grid-board {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 10px;
       width: 100%;
+      max-width: 380px;
       aspect-ratio: 1;
-      touch-action: none; /* Prevents any finger drag from scrolling */
+      touch-action: none;
     }
 
     .tile {
@@ -216,8 +218,7 @@
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.03);
       touch-action: none;
-      transition: transform 0.1s ease, border-color 0.1s ease, background 0.1s ease;
-      padding: 8px;
+      padding: 6px;
     }
 
     .tile.selected {
@@ -227,5 +228,410 @@
     }
 
     .available-pill {
-      margin-top: 14px;
-      background: rgba(255, 255,
+      margin-top: 12px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #8E8E93;
+    }
+
+    /* Modal Overlay */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 100;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 28px;
+      padding: 28px 20px;
+      width: 100%;
+      max-width: 300px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+
+    .modal-box h2 {
+      font-size: 1.8rem;
+      font-weight: 900;
+    }
+
+    .modal-score {
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: #00A651;
+      line-height: 1;
+      margin: 10px 0 4px 0;
+    }
+
+    .modal-box p {
+      color: #8E8E93;
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-buttons button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 14px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-home {
+      background: #E5E5EA;
+      color: #1C1C1E;
+    }
+
+    .btn-again {
+      background: #00A651;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Reusable SVG hatching patterns -->
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+    <defs>
+      <pattern id="stripe-red" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#EE2A24" stroke-width="2.6" />
+      </pattern>
+      <pattern id="stripe-green" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#00A651" stroke-width="2.6" />
+      </pattern>
+      <pattern id="stripe-purple" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#7C287D" stroke-width="2.6" />
+      </pattern>
+    </defs>
+  </svg>
+
+  <div class="app-viewport">
+
+    <!-- HOME SCREEN -->
+    <div id="home-screen">
+      <div class="title-area">
+        <h1>SET</h1>
+        <p>Classic 2-Minute Sprint</p>
+      </div>
+
+      <div class="preview-box">
+        <div class="preview-tile" id="prev-1"></div>
+        <div class="preview-tile" id="prev-2"></div>
+        <div class="preview-tile" id="prev-3"></div>
+      </div>
+
+      <div id="home-highscore-wrap" class="highscore-card hidden">
+        <span>PERSONAL BEST</span>
+        <strong id="home-highscore-val">0 Sets</strong>
+      </div>
+
+      <button id="btn-start" class="btn-play">Play Game</button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="hidden">
+      <div class="top-nav">
+        <button id="btn-exit" class="btn-exit">✕</button>
+        <div class="score-label">Sets: <span id="game-score">0</span></div>
+      </div>
+
+      <div class="board-center">
+        <div class="timer-row">
+          <div id="timer-pill" class="timer-pill">
+            <span>⏱</span>
+            <span id="game-timer">120s</span>
+          </div>
+        </div>
+
+        <!-- 3x3 Grid -->
+        <div id="grid" class="grid-board"></div>
+
+        <div id="available-sets-pill" class="available-pill">0 Sets Available</div>
+      </div>
+
+      <div></div>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div id="modal-over" class="modal-backdrop hidden">
+      <div class="modal-box">
+        <h2>Time's Up!</h2>
+        <div id="modal-score-val" class="modal-score">0</div>
+        <p>Sets Found</p>
+        <div class="modal-buttons">
+          <button id="btn-modal-home" class="btn-home">Home</button>
+          <button id="btn-modal-again" class="btn-again">Play Again</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const SHAPES = ['circle', 'square', 'triangle'];
+    const COLORS = [
+      { name: 'red', hex: '#EE2A24', pattern: 'stripe-red' },
+      { name: 'green', hex: '#00A651', pattern: 'stripe-green' },
+      { name: 'purple', hex: '#7C287D', pattern: 'stripe-purple' }
+    ];
+    const FILLS = ['solid', 'striped', 'outline'];
+
+    // Audio chime engine
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    function playBeep(success) {
+      try {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        if (success) {
+          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.15);
+        }
+      } catch (e) {}
+    }
+
+    function createSVG(shape, color, fill) {
+      let fillVal = 'none';
+      if (fill === 'solid') fillVal = color.hex;
+      else if (fill === 'striped') fillVal = `url(#${color.pattern})`;
+
+      let path = '';
+      if (shape === 'circle') {
+        path = `<circle cx="50" cy="50" r="37" fill="${fillVal}" stroke="${color.hex}" stroke-width="4.5" />`;
+      } else if (shape === 'square') {
+        path = `<rect x="13" y="13" width="74" height="74" rx="14" fill="${fillVal}" stroke="${color.hex}" stroke-width="4.5" />`;
+      } else if (shape === 'triangle') {
+        path = `<polygon points="50,15 85,78 15,78" stroke-linejoin="round" fill="${fillVal}" stroke="${color.hex}" stroke-width="4.5" />`;
+      }
+
+      return `<svg viewBox="0 0 100 100" style="width: 100%; height: 100%; pointer-events: none;">${path}</svg>`;
+    }
+
+    function isSet(a, b, c) {
+      const match = (x, y, z) => (x === y && y === z) || (x !== y && y !== z && x !== z);
+      return match(a.shape, b.shape, c.shape) &&
+             match(a.color.name, b.color.name, c.color.name) &&
+             match(a.fill, b.fill, c.fill);
+    }
+
+    let deck = [];
+    let board = [];
+    let selectedIds = new Set();
+    let score = 0;
+    let timeRemaining = 120;
+    let timerInterval = null;
+    let cardSeq = 1;
+    let highScore = parseInt(localStorage.getItem('set_high_score') || '0', 10);
+
+    function createFreshDeck(exclude = []) {
+      const d = [];
+      for (const s of SHAPES) {
+        for (const c of COLORS) {
+          for (const f of FILLS) {
+            const exists = exclude.some(x => x.shape === s && x.color.name === c.name && x.fill === f);
+            if (!exists) {
+              d.push({ id: cardSeq++, shape: s, color: c, fill: f });
+            }
+          }
+        }
+      }
+      return d.sort(() => Math.random() - 0.5);
+    }
+
+    function countSets() {
+      let count = 0;
+      for (let i = 0; i < board.length; i++) {
+        for (let j = i + 1; j < board.length; j++) {
+          for (let k = j + 1; k < board.length; k++) {
+            if (isSet(board[i], board[j], board[k])) count++;
+          }
+        }
+      }
+      return count;
+    }
+
+    function ensureBoardHasSet() {
+      let tries = 0;
+      while (countSets() === 0 && tries < 20) {
+        deck = createFreshDeck([]);
+        board = deck.splice(0, 9);
+        tries++;
+      }
+    }
+
+    function renderBoard() {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      board.forEach(card => {
+        const tile = document.createElement('div');
+        tile.className = 'tile' + (selectedIds.has(card.id) ? ' selected' : '');
+        tile.innerHTML = createSVG(card.shape, card.color, card.fill);
+
+        // Multi-touch handler directly on the tile
+        tile.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          handleTap(card);
+        }, { passive: false });
+
+        tile.addEventListener('mousedown', () => {
+          handleTap(card);
+        });
+
+        grid.appendChild(tile);
+      });
+
+      const sets = countSets();
+      document.getElementById('available-sets-pill').textContent = `${sets} ${sets === 1 ? 'Set' : 'Sets'} Available`;
+    }
+
+    function updateSelections() {
+      const tiles = document.querySelectorAll('.grid-board .tile');
+      board.forEach((card, idx) => {
+        if (tiles[idx]) {
+          if (selectedIds.has(card.id)) {
+            tiles[idx].classList.add('selected');
+          } else {
+            tiles[idx].classList.remove('selected');
+          }
+        }
+      });
+    }
+
+    function handleTap(card) {
+      if (timeRemaining <= 0) return;
+
+      if (selectedIds.has(card.id)) {
+        selectedIds.delete(card.id);
+        updateSelections();
+        return;
+      }
+
+      selectedIds.add(card.id);
+      updateSelections();
+
+      if (selectedIds.size === 3) {
+        const selected = board.filter(c => selectedIds.has(c.id));
+        if (isSet(selected[0], selected[1], selected[2])) {
+          playBeep(true);
+          score++;
+          document.getElementById('game-score').textContent = score;
+
+          selected.forEach(matched => {
+            const idx = board.findIndex(b => b.id === matched.id);
+            if (deck.length === 0) deck = createFreshDeck(board);
+            board[idx] = deck.shift();
+          });
+
+          ensureBoardHasSet();
+          selectedIds.clear();
+          renderBoard();
+        } else {
+          setTimeout(() => {
+            selectedIds.clear();
+            updateSelections();
+          }, 200);
+        }
+      }
+    }
+
+    function startGame() {
+      score = 0;
+      timeRemaining = 120;
+      selectedIds.clear();
+
+      document.getElementById('game-score').textContent = '0';
+      document.getElementById('game-timer').textContent = '120s';
+      document.getElementById('timer-pill').classList.remove('urgent');
+
+      deck = createFreshDeck([]);
+      board = deck.splice(0, 9);
+      ensureBoardHasSet();
+
+      document.getElementById('home-screen').classList.add('hidden');
+      document.getElementById('modal-over').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
+
+      renderBoard();
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        document.getElementById('game-timer').textContent = `${timeRemaining}s`;
+
+        if (timeRemaining <= 15) {
+          document.getElementById('timer-pill').classList.add('urgent');
+        }
+
+        if (timeRemaining <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      document.getElementById('modal-score-val').textContent = score;
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('set_high_score', highScore);
+      }
+      document.getElementById('modal-over').classList.remove('hidden');
+    }
+
+    function goHome() {
+      clearInterval(timerInterval);
+      if (highScore > 0) {
+        document.getElementById('home-highscore-wrap').classList.remove('hidden');
+        document.getElementById('home-highscore-val').textContent = `${highScore} Sets`;
+      }
+      document.getElementById('modal-over').classList.add('hidden');
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('home-screen').classList.remove('hidden');
+    }
+
+    // Init Home Screen Preview
+    document.getElementById('prev-1').innerHTML = createSVG('circle', COLORS[0], 'solid');
+    document.getElementById('prev-2').innerHTML = createSVG('triangle', COLORS[1], 'striped');
+    document.getElementById('prev-3').innerHTML = createSVG('square', COLORS[2], 'outline');
+
+    if (highScore > 0) {
+      document.getElementById('home-highscore-wrap').classList.remove('hidden');
+      document.getElementById('home-highscore-val').textContent = `${highScore} Sets`;
+    }
+
+    document.getElementById('btn-start').onclick = startGame;
+    document.getElementById('btn-exit').onclick = goHome;
+    document.getElementById('btn-modal-home').onclick = goHome;
+    document.getElementById('btn-modal-again').onclick = startGame;
+  </script>
+</body>
+</html>
