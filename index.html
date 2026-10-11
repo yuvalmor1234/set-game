@@ -340,6 +340,7 @@
     let timerInterval = null;
     let highScore = parseInt(localStorage.getItem('set_high_score') || '0', 10);
     let activePointerId = null;
+    let pointerDeselectId = null;
 
     function evaluateSelection() {
       if (selectedIds.size !== 3) return;
@@ -436,12 +437,12 @@
 
       event.preventDefault();
       activePointerId = event.pointerId;
+      pointerDeselectId = null;
 
       if (selectedIds.has(card.id)) {
-        if (selectedIds.size === 1) {
-          selectedIds.delete(card.id);
-          renderBoard();
-        }
+        selectedIds.delete(card.id);
+        pointerDeselectId = card.id;
+        renderBoard();
         return;
       }
 
@@ -472,6 +473,7 @@
       const card = board.find(c => c.id === cardId);
       if (!card) return;
 
+      if (cardId === pointerDeselectId) return;
       if (selectedIds.has(cardId)) return;
       if (selectedIds.size >= 3) return;
 
@@ -482,10 +484,12 @@
 
     document.addEventListener('pointerup', () => {
       activePointerId = null;
+      pointerDeselectId = null;
     });
 
     document.addEventListener('pointercancel', () => {
       activePointerId = null;
+      pointerDeselectId = null;
     });
 
     function handleSetSuccess(matchedCards) {
