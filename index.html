@@ -339,6 +339,18 @@
     let timeRemaining = 120;
     let timerInterval = null;
     let highScore = parseInt(localStorage.getItem('set_high_score') || '0', 10);
+    let activePointerId = null;
+
+    function evaluateSelection() {
+      if (selectedIds.size !== 3) return;
+
+      const selectedCards = board.filter(c => selectedIds.has(c.id));
+      if (isSet(selectedCards[0], selectedCards[1], selectedCards[2])) {
+        handleSetSuccess(selectedCards);
+      } else {
+        handleSetError(selectedCards);
+      }
+    }
 
     function createFreshDeck(excludeCards = []) {
       const fullDeck = [];
@@ -403,12 +415,14 @@
         const isSelected = selectedIds.has(card.id);
 
         tile.id = `tile-${card.id}`;
+        tile.dataset.cardId = String(card.id);
         tile.className = `set-tile flex items-center justify-center bg-white rounded-2xl border aspect-square p-2 cursor-pointer shadow-xs ${
           isSelected ? 'tile-selected' : 'border-gray-200/80 bg-white'
         }`;
         tile.innerHTML = renderSymbolSVG(card);
 
-        tile.addEventListener('click', () => handleCardClick(card));
+        tile.addEventListener('pointerdown', (event) => handlePointerSelection(event, card));
+        tile.addEventListener('pointerenter', (event) => handlePointerDrag(event, card));
         gridEl.appendChild(tile);
       });
 
@@ -417,27 +431,62 @@
       setsPillText.textContent = `${setsCount} ${setsCount === 1 ? 'Set' : 'Sets'} Available`;
     }
 
-    function handleCardClick(card) {
+    function handlePointerSelection(event, card) {
       if (timeRemaining <= 0) return;
 
+      event.preventDefault();
+      activePointerId = event.pointerId;
+
       if (selectedIds.has(card.id)) {
-        selectedIds.delete(card.id);
-        renderBoard();
+        if (selectedIds.size === 1) {
+          selectedIds.delete(card.id);
+          renderBoard();
+        }
         return;
       }
 
+      if (selectedIds.size >= 3) return;
+
       selectedIds.add(card.id);
       renderBoard();
-
-      if (selectedIds.size === 3) {
-        const selectedCards = board.filter(c => selectedIds.has(c.id));
-        if (isSet(selectedCards[0], selectedCards[1], selectedCards[2])) {
-          handleSetSuccess(selectedCards);
-        } else {
-          handleSetError(selectedCards);
-        }
-      }
+      evaluateSelection();
     }
+
+    function handlePointerDrag(event, card) {
+      if (activePointerId === null || event.pointerId !== activePointerId || timeRemaining <= 0) return;
+      if (selectedIds.has(card.id)) return;
+      if (selectedIds.size >= 3) return;
+
+      selectedIds.add(card.id);
+      renderBoard();
+      evaluateSelection();
+    }
+
+    document.addEventListener('pointermove', (event) => {
+      if (activePointerId === null || event.pointerId !== activePointerId) return;
+
+      const tile = document.elementFromPoint(event.clientX, event.clientY)?.closest('.set-tile');
+      if (!tile) return;
+
+      const cardId = Number(tile.dataset.cardId);
+      const card = board.find(c => c.id === cardId);
+      if (!card) return;
+
+      if (selectedIds.has(cardId)) return;
+      if (selectedIds.size >= 3) return;
+
+      selectedIds.add(cardId);
+      renderBoard();
+      evaluateSelection();
+    });
+
+    document.addEventListener('pointerup', () => {
+      activePointerId = null;
+    });
+
+    document.addEventListener('pointercancel', () => {
+      activePointerId = null;
+    });
 
     function handleSetSuccess(matchedCards) {
       soundSetSuccess();
