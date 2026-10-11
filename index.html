@@ -492,6 +492,10 @@
       pointerDeselectId = null;
     });
 
+    document.addEventListener('dblclick', (event) => {
+      event.preventDefault();
+    });
+
     function handleSetSuccess(matchedCards) {
       soundSetSuccess();
       score++;
